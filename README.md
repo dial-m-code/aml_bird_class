@@ -1,1 +1,1 @@
-# aml_bird_class
+# Image classification of birds
