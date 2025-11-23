@@ -101,13 +101,13 @@ def main():
     batch_size = 128
     num_classes = 200
     learning_rate = 0.001
-    num_epochs = 20
+    num_epochs = 40
     
     # Training dataset
     dataset = BirdDataset(
         csv_path="dataset/train_images.csv",
         image_root="dataset/train_images",
-        transform=all_transforms
+        transform=all_transforms_aug
         )
 
     train_loader = torch.utils.data.DataLoader(dataset = dataset,
@@ -154,9 +154,9 @@ def main():
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
         
-        print('Accuracy of the network on the {} train images: {} %'.format(50000, 100 * correct / total))
+        print('Accuracy of the network on the {} train images: {} %'.format(len(dataset), 100 * correct / total))
     
-    torch.save(model.state_dict(), "bird_class_v1")
+    torch.save(model.state_dict(), "bird_class_v2_aug")
 
 if __name__ == "__main__":
     main()
