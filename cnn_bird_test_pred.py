@@ -1,3 +1,7 @@
+"""
+Usage: python cnn_bird_test_pred.py [MODEL] [CSV-FILE NAME]
+"""
+
 import torch
 import torch.nn as nn
 import torchvision
@@ -6,15 +10,18 @@ from skimage import io, transform
 import pandas as pd
 import os
 from PIL import Image
+import sys
 
 from cnn_bird_test import ConvNeuralNet, all_transforms, BirdDataset, device
+
+assert len(sys.argv) > 2, "please provide a model and a filename"
 
 num_classes = 200
 
 # load model
 
 model = ConvNeuralNet(num_classes)
-model.load_state_dict(torch.load("bird_class_v1_aug_relu", weights_only=True))
+model.load_state_dict(torch.load(sys.argv[1], weights_only=True))
 model.eval()
 model.to(device)
 
@@ -52,4 +59,4 @@ with torch.no_grad():
 df_preds = pd.DataFrame(predictions, columns=["id", "label"])
 print(df_preds.head())
 
-df_preds.to_csv("predictions_v1_aug_relu.csv", index=False)
+df_preds.to_csv(sys.argv[2], index=False)

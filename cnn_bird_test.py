@@ -11,6 +11,10 @@ import os
 
 from PIL import Image
 
+import sys
+
+assert len(sys.argv) > 1, "please provide a model name"
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 class BirdDataset(torch.utils.data.Dataset):
@@ -168,7 +172,7 @@ def main():
         
         print('Accuracy of the network on the {} train images: {} %'.format(len(dataset), 100 * correct / total))
     
-    torch.save(model.state_dict(), "bird_class_v1_aug_relu")
+    torch.save(model.state_dict(), sys.argv[1])
 
 if __name__ == "__main__":
     main()
