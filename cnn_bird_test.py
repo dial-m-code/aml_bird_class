@@ -53,18 +53,18 @@ class ConvNeuralNet(nn.Module):
         super(ConvNeuralNet, self).__init__()
         
         self.conv_layer1 = nn.Conv2d(in_channels=3, out_channels=32, kernel_size=3)
-        self.relu1 = nn.ReLu()
+        self.relu1 = nn.ReLU()
         
         self.conv_layer2 = nn.Conv2d(in_channels=32, out_channels=32, kernel_size=3)
-        self.relu2 = nn.ReLu()
+        self.relu2 = nn.ReLU()
         
         self.max_pool1 = nn.MaxPool2d(kernel_size = 2, stride = 2)
         
         self.conv_layer3 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3)
-        self.relu3 = nn.ReLu()
+        self.relu3 = nn.ReLU()
         
         self.conv_layer4 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3)
-        self.relu4 = nn.ReLu()
+        self.relu4 = nn.ReLU()
         
         self.max_pool2 = nn.MaxPool2d(kernel_size = 2, stride = 2)
         
@@ -112,8 +112,8 @@ all_transforms_aug = transforms.Compose([
 def main():
     batch_size = 128
     num_classes = 200
-    learning_rate = 0.002
-    num_epochs = 40
+    learning_rate = 0.004
+    num_epochs = 50
     
     # Training dataset
     dataset = BirdDataset(
@@ -129,6 +129,7 @@ def main():
     
     
     model = ConvNeuralNet(num_classes).to(device)
+    print(model)
     
     # Set Loss function
     criterion = nn.CrossEntropyLoss()
