@@ -45,29 +45,31 @@ class BirdDataset(torch.utils.data.Dataset):
 
 
 class ConvNeuralNet(nn.Module):
-#  Determine what layers and their order in CNN object 
     def __init__(self, num_classes):
         super(ConvNeuralNet, self).__init__()
         self.conv_layer1 = nn.Conv2d(in_channels=3, out_channels=32, kernel_size=3)
         self.conv_layer2 = nn.Conv2d(in_channels=32, out_channels=32, kernel_size=3)
+        
         self.max_pool1 = nn.MaxPool2d(kernel_size = 2, stride = 2)
         
         self.conv_layer3 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3)
         self.conv_layer4 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3)
+        
         self.max_pool2 = nn.MaxPool2d(kernel_size = 2, stride = 2)
         
         self.fc1 = nn.Linear(53824, 128)
         self.relu1 = nn.ReLU()
         self.fc2 = nn.Linear(128, num_classes)
     
-    # Progresses data across layers    
     def forward(self, x):
         out = self.conv_layer1(x)
         out = self.conv_layer2(out)
+        out = nn.functional.relu(out)
         out = self.max_pool1(out)
         
         out = self.conv_layer3(out)
         out = self.conv_layer4(out)
+        out = nn.functional.relu(out)
         out = self.max_pool2(out)
                 
         out = out.reshape(out.size(0), -1)
@@ -97,10 +99,11 @@ all_transforms_aug = transforms.Compose([
         mean=[0.4859, 0.5032, 0.4440],
         std=[0.1743, 0.1736, 0.1860])
 ])
+
 def main():
     batch_size = 128
     num_classes = 200
-    learning_rate = 0.001
+    learning_rate = 0.002
     num_epochs = 40
     
     # Training dataset
@@ -122,9 +125,12 @@ def main():
     criterion = nn.CrossEntropyLoss()
     
     # Set optimizer
-    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, weight_decay = 0.005, momentum = 0.9)  
+    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, weight_decay = 0.005, momentum = 0.9) 
+    #optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
     
     total_step = len(train_loader)
+
+    model.train()
     
     for epoch in range(num_epochs):
         for i, (images, labels) in enumerate(train_loader):  
@@ -136,12 +142,18 @@ def main():
             outputs = model(images)
             loss = criterion(outputs, labels)
             
-            # Backward and optimize
+            # Reset gradient
             optimizer.zero_grad()
+            
+            # Backpropagate error
             loss.backward()
+
+            # Update weights
             optimizer.step()
     
         print('Epoch [{}/{}], Loss: {:.4f}'.format(epoch+1, num_epochs, loss.item()))
+
+    model.eval()
     
     with torch.no_grad():
         correct = 0
@@ -150,13 +162,13 @@ def main():
             images = images.to(device)
             labels = labels.to(device)
             outputs = model(images)
-            _, predicted = torch.max(outputs.data, 1)
+            predicted = outputs.argmax(dim=1)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
         
         print('Accuracy of the network on the {} train images: {} %'.format(len(dataset), 100 * correct / total))
     
-    torch.save(model.state_dict(), "bird_class_v2_aug")
+    torch.save(model.state_dict(), "bird_class_v1_aug_relu")
 
 if __name__ == "__main__":
     main()

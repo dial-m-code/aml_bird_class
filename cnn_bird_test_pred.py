@@ -14,7 +14,7 @@ num_classes = 200
 # load model
 
 model = ConvNeuralNet(num_classes)
-model.load_state_dict(torch.load("bird_class_v1", weights_only=True))
+model.load_state_dict(torch.load("bird_class_v1_aug_relu", weights_only=True))
 model.eval()
 model.to(device)
 
@@ -39,7 +39,7 @@ with torch.no_grad():
         images = images.to(device)
 
         outputs = model(images)
-        _, predicted = torch.max(outputs, 1)
+        predicted = outputs.argmax(dim=1)
 
         predicted = predicted.cpu().tolist()
         ids = ids.cpu().tolist()
@@ -52,5 +52,4 @@ with torch.no_grad():
 df_preds = pd.DataFrame(predictions, columns=["id", "label"])
 print(df_preds.head())
 
-# Optional: als CSV speichern
-df_preds.to_csv("predictions_with_ids.csv", index=False)
+df_preds.to_csv("predictions_v1_aug_relu.csv", index=False)
