@@ -1,0 +1,5 @@
+- simple cnn with 4 convolutions
+- added augmentation
+- added ReLU after each convolution
+- increased channels of convolutions (128 max to 256 max)
+- added batch norm 
