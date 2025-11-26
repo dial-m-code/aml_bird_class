@@ -12,7 +12,7 @@ import os
 from PIL import Image
 import sys
 
-from cnn_bird_test import ConvNeuralNet, all_transforms, BirdDataset, device
+from cnn_bird_test_larger import ConvNeuralNet, all_transforms, BirdDataset, device, predict_transform
 
 assert len(sys.argv) > 2, "please provide a model and a filename"
 
@@ -30,13 +30,13 @@ model.to(device)
 pred_dataset = BirdDataset(
         csv_path="dataset/test_images_path.csv",
         image_root="dataset/test_images",
-        transform=all_transforms,
+        transform=predict_transform,
         pred = True
         )
 
 pred_loader = torch.utils.data.DataLoader(
     dataset=pred_dataset,
-    batch_size=64,
+    batch_size=16,
     shuffle=False
 )
 
