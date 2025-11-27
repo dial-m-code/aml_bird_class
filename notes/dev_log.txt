@@ -3,3 +3,5 @@
 - added ReLU after each convolution
 - increased channels of convolutions (128 max to 256 max), added padding
 - added batch norm 
+- added dropouts after every convolution
+- increased model depth
