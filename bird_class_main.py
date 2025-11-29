@@ -14,18 +14,22 @@ assert len(sys.argv) > 1, "please provide a model name"
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+# Hyperparameters
+batch_size = 32
+learning_rate = 0.01
+num_epochs = 200
+weight_decay = 5e-4
+num_classes = 200
+workers = 16
+
+
 def main():
-    batch_size = 64
-    num_classes = 200
-    learning_rate = 0.01
-    num_epochs = 50
-    workers = 16
-    
-    # Training dataset
+    # Load training dataset
     dataset = BirdDataset(
         csv_path="dataset/train_images.csv",
         image_root="dataset/train_images",
-        transform=all_transforms
+        transform=train_transforms,
+        #use_all=True
         )
 
     train_loader = torch.utils.data.DataLoader(dataset = dataset,
@@ -45,22 +49,24 @@ def main():
                                                shuffle = False, 
                                                num_workers=workers)
     
-    model = ConvNeuralNet(num_classes).to(device)
+    #model = ConvNeuralNet(num_classes).to(device)
+    #model = SimpleCNN(num_classes).to(device)
+    model = LargeCNN(num_classes).to(device)
     print(model)
     
     # Set Loss function
-    #criterion = nn.CrossEntropyLoss(label_smoothing=0.1)
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.CrossEntropyLoss(label_smoothing=0.1)
+    #criterion = nn.CrossEntropyLoss()
     
     # Set optimizer
-    #optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9, weight_decay=1e-4, nesterov=True)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-4)
+    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9, weight_decay=1e-4, nesterov=True)
+    #optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-4)
 
     # Set scheduler
     #scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=30, T_mult=2, eta_min=1e-5)
     #scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=40, gamma=0.5)
-    
-    #total_step = len(train_loader)
+    #scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=num_epochs, eta_min=1e-6)
+    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer,milestones=[80, 140, 180], gamma=0.1)
     
     for epoch in range(num_epochs):
         model.train()
@@ -84,7 +90,7 @@ def main():
             optimizer.step()
             train_loss += loss.item()
         
-        #scheduler.step()
+        scheduler.step()
     
         # Validate every 5 epochs
         if (epoch + 1) % 5 == 0:

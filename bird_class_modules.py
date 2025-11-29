@@ -26,6 +26,17 @@ all_transforms = transforms.Compose([
     transforms.RandomErasing(p=0.2)
 ])
 
+# Less agressive
+train_transforms = transforms.Compose([
+    transforms.RandomResizedCrop(224, scale=(0.7, 1.0)),
+    transforms.RandomHorizontalFlip(),
+    transforms.RandomRotation(15),
+    transforms.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1),
+    transforms.Compose([transforms.ToImage(), transforms.ToDtype(torch.float32, scale=True)]),
+    transforms.Normalize(mean, std),
+    transforms.RandomErasing(p=0.1)
+])
+
 predict_transform = transforms.Compose([
     transforms.Resize(256),
     transforms.CenterCrop(224),
@@ -45,7 +56,7 @@ class BirdDataset(torch.utils.data.Dataset):
             df,
             test_size=val_split,
             stratify=df["label"],
-            random_state=16
+            random_state=112
             )
 
             self.df = train_df if train else val_df

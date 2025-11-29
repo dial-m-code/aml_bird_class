@@ -12,7 +12,9 @@ import os
 from PIL import Image
 import sys
 
-from cnn_bird_test_larger import ConvNeuralNet, all_transforms, BirdDataset, device, predict_transform
+from bird_class_main import device
+from bird_class_modules import *
+from bird_class_cnn_model import *
 
 assert len(sys.argv) > 2, "please provide a model and a filename"
 
@@ -20,10 +22,12 @@ num_classes = 200
 
 # load model
 
-model = ConvNeuralNet(num_classes)
+#model = ConvNeuralNet(num_classes)
+#model = SimpleCNN(num_classes)
+model = LargeCNN(num_classes)
 model.load_state_dict(torch.load(sys.argv[1], weights_only=True))
-model.eval()
 model.to(device)
+model.eval()
 
 # load dataset
 
