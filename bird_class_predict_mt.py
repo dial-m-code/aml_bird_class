@@ -24,7 +24,8 @@ num_classes = 200
 
 #model = ConvNeuralNet(num_classes)
 #model = SimpleCNN(num_classes)
-model = LargeCNN(num_classes)
+#model = LargeCNN(num_classes)
+model = LargeCNN_MT()
 model.load_state_dict(torch.load(sys.argv[1], weights_only=True))
 model.to(device)
 model.eval()
@@ -49,7 +50,7 @@ with torch.no_grad():
     for images, _, ids in pred_loader:
         images = images.to(device)
 
-        outputs = model(images)
+        outputs, _ = model(images)
         predicted = outputs.argmax(dim=1)
 
         predicted = predicted.cpu().tolist()
