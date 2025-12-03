@@ -16,7 +16,7 @@ import numpy as np
 # Std: tensor([0.1743, 0.1736, 0.1860])
 mean = [0.4859, 0.5032, 0.4440]
 std = [0.1743, 0.1736, 0.1860]
-
+"""
 all_transforms = transforms.Compose([
     transforms.RandomResizedCrop(224, scale=(0.7, 1.0)),
     transforms.RandomHorizontalFlip(),
@@ -27,16 +27,18 @@ all_transforms = transforms.Compose([
     transforms.Normalize(mean, std),
     transforms.RandomErasing(p=0.2)
 ])
-
+"""
 # Less agressive
 train_transforms = transforms.Compose([
-    transforms.RandomResizedCrop(224, scale=(0.7, 1.0)),
+    transforms.RandomResizedCrop(224, scale=(0.5, 1.0)),
     transforms.RandomHorizontalFlip(),
-    transforms.RandomRotation(15),
-    transforms.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.05),
+    transforms.RandomRotation(10),
+    transforms.RandAugment(num_ops=2, magnitude=7),
+    transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3, hue=0.1),
+    transforms.RandomApply(torch.nn.ModuleList([transforms.GaussianBlur(3)]), p=0.2),
     transforms.Compose([transforms.ToImage(), transforms.ToDtype(torch.float32, scale=True)]),
     transforms.Normalize(mean, std),
-    transforms.RandomErasing(p=0.1)
+    transforms.RandomErasing(p=0.25)
 ])
 
 predict_transform = transforms.Compose([
@@ -48,17 +50,19 @@ predict_transform = transforms.Compose([
 
 
 # Dataset Class
+RS = 90
+SPLIT = 0.1
 
 class BirdDataset(torch.utils.data.Dataset):
-    def __init__(self, csv_path, image_root, transform=None, pred=False, train=True, val_split=0.2, use_all=False):
+    def __init__(self, csv_path, image_root, transform=None, pred=False, train=True, use_all=False):
         if not pred and not use_all:
             df = pd.read_csv(csv_path)
             
             train_df, val_df = train_test_split(
             df,
-            test_size=val_split,
+            test_size=SPLIT,
             stratify=df["label"],
-            random_state=112
+            random_state=RS
             )
 
             self.df = train_df if train else val_df
@@ -95,15 +99,15 @@ class BirdDataset(torch.utils.data.Dataset):
             return img, label
 
 class BirdDatasetMT(torch.utils.data.Dataset):
-    def __init__(self, csv_path, image_root, attributes,transform=None, pred=False, train=True, val_split=0.2, use_all=False):
+    def __init__(self, csv_path, image_root, attributes,transform=None, pred=False, train=True, use_all=False):
         if not pred and not use_all:
             df = pd.read_csv(csv_path)
             
             train_df, val_df = train_test_split(
             df,
-            test_size=val_split,
+            test_size=SPLIT,
             stratify=df["label"],
-            random_state=112
+            random_state=RS
             )
 
             self.df = train_df if train else val_df

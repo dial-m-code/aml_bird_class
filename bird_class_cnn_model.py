@@ -113,7 +113,6 @@ class SimpleCNN(nn.Module):
         x = self.fc(x)
         return x
 
-# Best one so far
 class LargeCNN(nn.Module):
     def __init__(self, num_classes=200):
         super(LargeCNN, self).__init__()
@@ -272,9 +271,84 @@ class LargeCNN_MT(nn.Module):
         # attributes
         attributes = torch.flatten(features, 1)
         
-        attributes = F.relu(self.bn_fc1_a(self.fc1_a(attributes)))
+        #attributes = F.relu(self.bn_fc1_a(self.fc1_a(attributes)))
         attributes = self.drop_fc1_a(attributes)
         
         attributes = self.fc2_a(attributes)
+        
+        return classes, attributes
+
+class MediumCNN_MT(nn.Module):
+    def __init__(self, num_classes=200, num_attributes=312):
+        super(MediumCNN_MT, self).__init__()
+        
+        self.conv1 = nn.Conv2d(3, 32, 3, padding=1)
+        self.bn1 = nn.BatchNorm2d(32)
+        self.conv2 = nn.Conv2d(32, 32, 3, padding=1)
+        self.bn2 = nn.BatchNorm2d(32)
+        self.pool1 = nn.MaxPool2d(2, 2)
+
+        self.conv3 = nn.Conv2d(32, 64, 3, padding=1)
+        self.bn3 = nn.BatchNorm2d(64)
+        self.conv4 = nn.Conv2d(64, 64, 3, padding=1)
+        self.bn4 = nn.BatchNorm2d(64)
+        self.pool2 = nn.MaxPool2d(2, 2)
+        
+        self.conv5 = nn.Conv2d(64, 128, 3, padding=1)
+        self.bn5 = nn.BatchNorm2d(128)
+        self.conv6 = nn.Conv2d(128, 128, 3, padding=1)
+        self.bn6 = nn.BatchNorm2d(128)
+        self.pool3 = nn.MaxPool2d(2, 2)
+
+        self.conv7 = nn.Conv2d(128, 256, 3, padding=1)
+        self.bn7 = nn.BatchNorm2d(256)
+        self.conv8 = nn.Conv2d(256, 256, 3, padding=1)
+        self.bn8 = nn.BatchNorm2d(256)
+        self.pool4 = nn.MaxPool2d(2, 2)
+
+        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+
+        # shared layers
+        self.fc_shared = nn.Linear(256, 256)
+        self.bn_shared = nn.BatchNorm1d(256)
+        self.drop_shared = nn.Dropout(0.5)
+
+        # class layer
+        self.fc_cls = nn.Linear(256, num_classes)
+        
+        # attribute layer
+        self.fc_attr = nn.Linear(256, num_attributes)
+    
+    def forward(self, x):
+        x = F.relu(self.bn1(self.conv1(x)))
+        x = F.relu(self.bn2(self.conv2(x)))
+        x = self.pool1(x)
+
+        x = F.relu(self.bn3(self.conv3(x)))
+        x = F.relu(self.bn4(self.conv4(x)))
+        x = self.pool2(x)
+
+        x = F.relu(self.bn5(self.conv5(x)))
+        x = F.relu(self.bn6(self.conv6(x)))
+        x = self.pool3(x)
+
+        x = F.relu(self.bn7(self.conv7(x)))
+        x = F.relu(self.bn8(self.conv8(x)))
+        x = self.pool4(x)
+
+        features = self.avgpool(x)
+        features = torch.flatten(features, 1)
+
+        # shared layers
+        features = self.fc_shared(features)
+        features = self.bn_shared(features)
+        features = F.relu(features)
+        features = self.drop_shared(features)
+
+        # class layer
+        classes = self.fc_cls(features)
+
+        # attribute layer
+        attributes = self.fc_attr(features)
         
         return classes, attributes

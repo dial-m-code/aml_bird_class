@@ -5,3 +5,53 @@
 - added batch norm 
 - added dropouts after every convolution
 - increased model depth
+- increase dropouts to 0.5
+- increase epochs
+- make dataset smaller
+- experiment with augmentations
+- experiment with loss summing
+
+
+- reduced model size -> halfed channels
+- balanced heads and reduced complexity
+- removed conv block dropouts
+- added shared fc layer
+- tested higher and lower amounts of augmentation 
+- higher seemed to counteract overfitting
+
+- stabilize train and val loss -> higher LR, batch size at 32 seemed to work well
+- then train for a lot more epochs
+
+learned:
+start with simple network
+incorporate attributes as training signal
+small dataset means:
+    less regulaization (only batch norm, no dropouts in conv blocks)
+    start with optimizing augmentation first
+    smaller batch size -> 32
+raise LR, when doing more augmentation
+train longer, when loss is decreasing steadily
+try higher LR, with scheduler
+LR and batch size do depend on each other
+
+
+---
+
+done -> decrease channel sizes
+32 -> 64 -> 128 -> 256
+
+done -> remove dropouts?
+-> keep only in final fc layer
+-> 0.2 in last conv block or 0.1
+#self.drop1 = nn.Dropout2d(0.2)
+
+done -> shared first FC block, then branch out
+
+done -> balance task heads
+
+Paramters for Grid Search
+weight of attr_loss
+number of epochs
+augmentation method? or probability of erasing and deletion?
+
+transforms.RandomApply(torch.nn.ModuleList([transforms.GaussianBlur(3)]), p=0.2),
