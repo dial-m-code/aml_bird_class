@@ -16,8 +16,8 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Hyperparameters
 batch_size = 32
-learning_rate = 0.05 #0.015
-num_epochs = 400 # increase by 1.1 for final training, try 350
+learning_rate = 0.05
+num_epochs = 400
 weight_decay = 1e-4
 workers = 16
 
@@ -58,6 +58,7 @@ def main():
     
     # Set Loss function
     #criterion = nn.CrossEntropyLoss(label_smoothing=0.1)
+    #criterion_class = nn.CrossEntropyLoss(label_smoothing=0.1)
     criterion_class = nn.CrossEntropyLoss()
     criterion_attribute = nn.BCEWithLogitsLoss()
     
@@ -93,7 +94,7 @@ def main():
             # Loss function
             loss_class = criterion_class(classes_out, labels)
             loss_attribute = criterion_attribute(attributes_out, attributes)
-            loss = loss_class + 0.3 * loss_attribute
+            loss = loss_class + loss_attribute
             
             # Backpropagate error
             loss.backward()
@@ -120,7 +121,9 @@ def main():
             print('---')
     
     torch.save(model.state_dict(), sys.argv[1]+"_final-epoch")
-    print(f"Training took: {(time.time()-train_start_time)//60} minutes")
+    duration_train = (time.time()-train_start_time)//60
+    print(f"Training took: {duration_train} minutes")
+    write_to_log("equal loss weights, different augmentation, more epochs", best_val_acc, val_acc, train_loss_avg, val_loss, duration_train, num_epochs)
 
 def validate(model, val_loader, criterion_class, criterion_attribute, device):
     model.eval()
@@ -144,6 +147,15 @@ def validate(model, val_loader, criterion_class, criterion_attribute, device):
     avg_val_loss = val_loss / total
     val_accuracy = 100 * correct / total
     return avg_val_loss, val_accuracy
+
+def write_to_log(description, best_acc, last_acc, train_loss, val_loss, duration, num_epochs):
+    with open("train_log.txt", "a") as f:
+        f.write("---\n")
+        f.write(f"Training description: {description}\n")
+        f.write(f"Best Acc.: {best_acc:.2f}%, Last Acc.: {last_acc:.2f}%\n")
+        f.write(f"Train loss: {train_loss:.4f}, Val. loss: {val_loss:.4f}\n")
+        f.write(f"Training took: {duration} minutes.\n")
+        f.write(f"Trained for {num_epochs} epochs.\n")
 
 if __name__ == "__main__":
     main()

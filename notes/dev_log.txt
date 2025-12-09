@@ -33,12 +33,21 @@ raise LR, when doing more augmentation
 train longer, when loss is decreasing steadily
 try higher LR, with scheduler
 LR and batch size do depend on each other
+blur is very effective as augmentation technique
 
+---
+
+things we could try
+- different weights for combined loss (also dynmaically reduce them in later epochs)
+- larger channels
+- dropout in last convolution (probaly last resort)
+- use label smoothing
+- up the augmentation slightly (random erasing, rand augment, blur, rotation)
 
 ---
 
 done -> decrease channel sizes
-32 -> 64 -> 128 -> 256
+32 -> 64 -> 128 -> 25
 
 done -> remove dropouts?
 -> keep only in final fc layer

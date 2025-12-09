@@ -32,7 +32,7 @@ all_transforms = transforms.Compose([
 train_transforms = transforms.Compose([
     transforms.RandomResizedCrop(224, scale=(0.5, 1.0)),
     transforms.RandomHorizontalFlip(),
-    transforms.RandomRotation(10),
+    transforms.RandomRotation(10), # was 10
     transforms.RandAugment(num_ops=2, magnitude=7),
     transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3, hue=0.1),
     transforms.RandomApply(torch.nn.ModuleList([transforms.GaussianBlur(3)]), p=0.2),
