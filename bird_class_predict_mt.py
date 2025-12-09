@@ -12,7 +12,8 @@ import os
 from PIL import Image
 import sys
 
-from bird_class_main import device
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 from bird_class_modules import *
 from bird_class_cnn_model import *
 
@@ -27,7 +28,7 @@ num_classes = 200
 #model = LargeCNN(num_classes)
 #model = LargeCNN_MT()
 model = MediumCNN_MT()
-model.load_state_dict(torch.load(sys.argv[1], weights_only=True))
+model.load_state_dict(torch.load(sys.argv[1], weights_only=True, map_location="cpu"))
 model.to(device)
 model.eval()
 

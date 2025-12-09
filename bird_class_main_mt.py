@@ -44,7 +44,7 @@ def main():
         transform=predict_transform,
         train=False
         )
-    
+
     eval_loader = torch.utils.data.DataLoader(dataset = dataset_eval,
                                                batch_size = batch_size,
                                                shuffle = False, 

@@ -72,6 +72,7 @@ class BirdDataset(torch.utils.data.Dataset):
         
         self.paths = self.df["image_path"].tolist()
         self.labels = (self.df["label"] - 1).tolist()
+        self.img_ids = []
 
         self.image_root = image_root
         self.transform = transform
