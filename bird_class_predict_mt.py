@@ -1,4 +1,9 @@
 """
+Group 2:
+David Carranza Navarrete, Leon Meyer, Marius Ursu
+
+This script contains code for making the predictions with our model.
+
 Usage: python cnn_bird_test_pred.py [MODEL] [CSV-FILE NAME]
 """
 
@@ -23,10 +28,6 @@ num_classes = 200
 
 # load model
 
-#model = ConvNeuralNet(num_classes)
-#model = SimpleCNN(num_classes)
-#model = LargeCNN(num_classes)
-#model = LargeCNN_MT()
 model = MediumCNN_MT()
 model.load_state_dict(torch.load(sys.argv[1], weights_only=True, map_location="cpu"))
 model.to(device)
@@ -57,7 +58,7 @@ with torch.no_grad():
 
         predicted = predicted.cpu().tolist()
         ids = ids.cpu().tolist()
-        
+
         predicted = [p + 1 for p in predicted]
 
         batch_preds = list(zip(ids, predicted))

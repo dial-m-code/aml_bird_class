@@ -1,4 +1,10 @@
 """
+Group 2:
+David Carranza Navarrete, Leon Meyer, Marius Ursu
+
+This script contains code for slicing into our model and getting the outputs
+of certain convolutional layers.
+
 Usage: python cnn_bird_test_pred.py [MODEL] [CSV-FILE NAME]
 """
 
@@ -57,7 +63,7 @@ with torch.no_grad():
 
         predicted = predicted.cpu().tolist()
         ids = ids.cpu().tolist()
-        
+
         predicted = [p + 1 for p in predicted]
 
         batch_preds = list(zip(ids, predicted))
@@ -83,14 +89,14 @@ def get_activation(name):
         activations[name] = out.detach()
     return hook
 
-# Register hooks  
+# Register hooks
 model.conv1.register_forward_hook(get_activation('conv1'))
 model.conv2.register_forward_hook(get_activation('conv2'))
 model.conv3.register_forward_hook(get_activation('conv3'))
 model.conv5.register_forward_hook(get_activation('conv5'))
 model.conv8.register_forward_hook(get_activation('conv8'))
 
-# Forward pass  
+# Forward pass
 sample_img, _, _ = next(iter(pred_loader))
 sample_img = sample_img.to(device)
 output,_ = model(sample_img)
@@ -163,5 +169,3 @@ overlay = cv2.addWeighted(np.uint8(orig*255), 0.6, heatmap, 0.4, 0)
 
 plt.imsave(f"{save_dir}/gradcam_heatmap.png", cam, cmap='jet')
 plt.imsave(f"{save_dir}/gradcam_overlay.png", overlay)
-
- 

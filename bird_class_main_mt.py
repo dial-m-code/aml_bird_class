@@ -1,3 +1,9 @@
+"""
+Group 2:
+David Carranza Navarrete, Leon Meyer, Marius Ursu
+
+This script contains the main trining loop for our model.
+"""
 import torch
 import torchvision
 
@@ -34,7 +40,7 @@ def main():
 
     train_loader = torch.utils.data.DataLoader(dataset = dataset,
                                                batch_size = batch_size,
-                                               shuffle = True, 
+                                               shuffle = True,
                                                num_workers=workers)
     # Load eval dataset
     dataset_eval = BirdDatasetMT(
@@ -47,39 +53,29 @@ def main():
 
     eval_loader = torch.utils.data.DataLoader(dataset = dataset_eval,
                                                batch_size = batch_size,
-                                               shuffle = False, 
+                                               shuffle = False,
                                                num_workers=workers)
-    
-    #model = ConvNeuralNet(num_classes).to(device)
-    #model = SimpleCNN(num_classes).to(device)
-    #model = LargeCNN_MT().to(device)
+
     model = MediumCNN_MT().to(device)
     print(model)
-    
-    # Set Loss function
-    #criterion = nn.CrossEntropyLoss(label_smoothing=0.1)
-    #criterion_class = nn.CrossEntropyLoss(label_smoothing=0.1)
+
+    # Set Loss functions
     criterion_class = nn.CrossEntropyLoss()
     criterion_attribute = nn.BCEWithLogitsLoss()
-    
+
     # Set optimizer
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9, weight_decay=weight_decay, nesterov=True)
-    #optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-4)
 
     # Set scheduler
-    #scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=30, T_mult=2, eta_min=1e-5)
-    #scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=40, gamma=0.5)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=num_epochs) # eta_min=1e-5
-    #scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer,milestones=[80, 140, 180], gamma=0.1)
-    #scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', patience=5)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=num_epochs)
 
     train_start_time = time.time()
     best_val_acc = 0
-    
+
     for epoch in range(num_epochs):
         model.train()
         train_loss = 0.0
-        for i, (images, labels, attributes) in enumerate(train_loader):  
+        for i, (images, labels, attributes) in enumerate(train_loader):
             # Move tensors to GPU
             images = images.to(device)
             labels = labels.to(device)
@@ -87,7 +83,7 @@ def main():
 
             # Reset gradient
             optimizer.zero_grad()
-            
+
             # Forward pass
             classes_out, attributes_out = model(images)
 
@@ -95,17 +91,17 @@ def main():
             loss_class = criterion_class(classes_out, labels)
             loss_attribute = criterion_attribute(attributes_out, attributes)
             loss = loss_class + loss_attribute
-            
+
             # Backpropagate error
             loss.backward()
 
             # Update weights
             optimizer.step()
             train_loss += loss.item()
-        
+
         scheduler.step()
-    
-        # Validate every 5 epochs
+
+        # Validate every 5 epochs or every epoch
         validate_every_epoch = True
         if (epoch + 1) % 5 == 0 or validate_every_epoch:
             val_loss, val_acc = validate(model, eval_loader, criterion_class, criterion_attribute, device)
@@ -116,21 +112,25 @@ def main():
             print(f'LR: {scheduler.get_last_lr()[0]:.6f}')
             if val_acc > best_val_acc:
                 best_val_acc = val_acc
+                # Save model with best accuracy
                 torch.save(model.state_dict(), sys.argv[1])
                 print('-new model saved-')
             print('---')
-    
+
     torch.save(model.state_dict(), sys.argv[1]+"_final-epoch")
     duration_train = (time.time()-train_start_time)//60
     print(f"Training took: {duration_train} minutes")
     write_to_log("equal loss weights, different augmentation, more epochs", best_val_acc, val_acc, train_loss_avg, val_loss, duration_train, num_epochs)
 
 def validate(model, val_loader, criterion_class, criterion_attribute, device):
+    """
+    Validate current model on the validation split.
+    """
     model.eval()
     val_loss = 0.0
     correct = 0
     total = 0
-    
+
     with torch.no_grad():
         for images, labels, attributes in val_loader:
             images, labels, attributes = images.to(device), labels.to(device), attributes.to(device)
@@ -138,12 +138,12 @@ def validate(model, val_loader, criterion_class, criterion_attribute, device):
             loss_class = criterion_class(classes_out, labels)
             loss_attribute = criterion_attribute(attributes_out, attributes)
             loss = loss_class + 0.3 * loss_attribute
-            
+
             val_loss += loss.item() * images.size(0)
             _, predicted = torch.max(classes_out.data, 1)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
-    
+
     avg_val_loss = val_loss / total
     val_accuracy = 100 * correct / total
     return avg_val_loss, val_accuracy

@@ -1,3 +1,10 @@
+"""
+Group 2:
+David Carranza Navarrete, Leon Meyer, Marius Ursu
+
+This script contains a class for loading the dataset as well as transforms used
+for training and prediction.
+"""
 import os
 
 import torch
@@ -16,19 +23,7 @@ import numpy as np
 # Std: tensor([0.1743, 0.1736, 0.1860])
 mean = [0.4859, 0.5032, 0.4440]
 std = [0.1743, 0.1736, 0.1860]
-"""
-all_transforms = transforms.Compose([
-    transforms.RandomResizedCrop(224, scale=(0.7, 1.0)),
-    transforms.RandomHorizontalFlip(),
-    transforms.RandomRotation(10),
-    transforms.ColorJitter(0.15, 0.15, 0.15),
-    transforms.RandomPerspective(distortion_scale=0.2, p=0.2),
-    transforms.Compose([transforms.ToImage(), transforms.ToDtype(torch.float32, scale=True)]),
-    transforms.Normalize(mean, std),
-    transforms.RandomErasing(p=0.2)
-])
-"""
-# Less agressive
+
 train_transforms = transforms.Compose([
     transforms.RandomResizedCrop(224, scale=(0.5, 1.0)),
     transforms.RandomHorizontalFlip(),
@@ -53,57 +48,11 @@ predict_transform = transforms.Compose([
 RS = 90
 SPLIT = 0.1
 
-class BirdDataset(torch.utils.data.Dataset):
-    def __init__(self, csv_path, image_root, transform=None, pred=False, train=True, use_all=False):
-        if not pred and not use_all:
-            df = pd.read_csv(csv_path)
-            
-            train_df, val_df = train_test_split(
-            df,
-            test_size=SPLIT,
-            stratify=df["label"],
-            random_state=RS
-            )
-
-            self.df = train_df if train else val_df
-            self.df = self.df.reset_index(drop=True)
-        else:
-            self.df = pd.read_csv(csv_path)
-        
-        self.paths = self.df["image_path"].tolist()
-        self.labels = (self.df["label"] - 1).tolist()
-        self.img_ids = []
-
-        self.image_root = image_root
-        self.transform = transform
-
-        self.pred = pred
-        if self.pred:
-            self.img_ids = self.df["id"].tolist()
-        print(f"Dataset loaded: {len(self.labels)} items.")
-        print(f"Mode: {'Prediction' if pred else 'Train/Val'}, Training: {train}, use all: {use_all}")
-    
-    def __len__(self):
-        return len(self.paths)
-    
-    def __getitem__(self, idx):
-        full_path = os.path.join(self.image_root, self.paths[idx][1:])
-
-        img = Image.open(full_path).convert("RGB")
-        label = int(self.labels[idx])
-
-        if self.transform:
-            img = self.transform(img)
-        if self.pred:
-            return img, label, self.img_ids[idx]
-        else:
-            return img, label
-
 class BirdDatasetMT(torch.utils.data.Dataset):
     def __init__(self, csv_path, image_root, attributes,transform=None, pred=False, train=True, use_all=False):
         if not pred and not use_all:
             df = pd.read_csv(csv_path)
-            
+
             train_df, val_df = train_test_split(
             df,
             test_size=SPLIT,
@@ -115,7 +64,7 @@ class BirdDatasetMT(torch.utils.data.Dataset):
             self.df = self.df.reset_index(drop=True)
         else:
             self.df = pd.read_csv(csv_path)
-        
+
         self.paths = self.df["image_path"].tolist()
         self.labels = (self.df["label"] - 1).tolist()
 
@@ -129,10 +78,10 @@ class BirdDatasetMT(torch.utils.data.Dataset):
             self.img_ids = self.df["id"].tolist()
         print(f"Dataset loaded: {len(self.labels)} items.")
         print(f"Mode: {'Prediction' if pred else 'Train/Val'}, Training: {train}, use all: {use_all}")
-    
+
     def __len__(self):
         return len(self.paths)
-    
+
     def __getitem__(self, idx):
         full_path = os.path.join(self.image_root, self.paths[idx][1:])
 
